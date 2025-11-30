@@ -334,6 +334,13 @@ const Provider = function (spec, playerConfig, onExtendedLoad) {
                         OvenPlayerConsole.log("Provider : video play error", error.message);
 
                         isPlayingProcessing = false;
+
+                        // Auto mute and retry play if autoMuteRetryOnNotAllowed config is enabled
+                        if (error.name === 'NotAllowedError' && playerConfig.getConfig().autoMuteRetryOnNotAllowed) {
+                            that.setMute(true);
+                            that.play(true);
+                        }
+
                         /*
                         if(!mutedPlay){
                             that.setMute(true);
