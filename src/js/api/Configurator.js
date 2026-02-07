@@ -40,6 +40,7 @@ const Configurator = function (options, provider) {
             doubleTapToSeek: false,
             showZoomSettings: false,
             legacyUI: false,
+            contextItems: [],
             parseStream: {
                 enabled: false
             }
