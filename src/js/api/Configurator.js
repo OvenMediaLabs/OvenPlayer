@@ -42,7 +42,8 @@ const Configurator = function (options, provider) {
             legacyUI: false,
             parseStream: {
                 enabled: false
-            }
+            },
+            autoMuteRetryOnNotAllowed: false,
         };
         const serialize = function (val) {
             if (val === undefined) {
