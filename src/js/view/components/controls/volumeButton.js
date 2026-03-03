@@ -181,8 +181,9 @@ const VolumeButton = function($container, api){
         // },
         "touchstart .op-volume-button" : function(event){
             if(isMobile){
-                if (api.getMute()) {
+                if (api.getMute() || api.getVolume() === 0) {
                     api.setMute(false);
+                    api.setVolume(100);
                 } else {
                     api.setMute(true);
                 }
