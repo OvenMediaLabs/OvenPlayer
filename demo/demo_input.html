@@ -478,7 +478,6 @@
                 </fieldset>
               </div>
             </div>
-
           </li>
         </ul>
       </div>
@@ -491,7 +490,7 @@
       <span
         id="ovenLiveKitVersion"
         class="badge badge-info align-middle ms-1"
-      >2026-01-23-1</span>
+      >2026-03-18-2</span>
     </small>
   </div>
 
@@ -602,7 +601,7 @@
     integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI="
     crossorigin="anonymous"
   ></script>
-  <script src="https://cdn.jsdelivr.net/npm/ovenlivekit@1.5.4/dist/OvenLiveKit.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ovenlivekit@1.5.5/dist/OvenLiveKit.min.js"></script>
 
 
   <script>
@@ -759,19 +758,14 @@
       videoFrameInput.prop('disabled', !enable);
     }
 
-
-    let frameCalculatorTimer = null;
-    let totalVideoFrames = 0;
+    function normalizeFrameRate(frameRate) {
+      if (Number.isInteger(frameRate)) {
+        return frameRate;
+      }
+      return parseFloat(frameRate).toFixed(2);
+    }
 
     function getCapturedResolutionAndFramerate(videoElement) {
-
-      if (frameCalculatorTimer) {
-
-        clearInterval(frameCalculatorTimer);
-        frameCalculatorTimer = null;
-      }
-
-      totalVideoFrames = 0;
 
       if (input && input.inputStream) {
 
@@ -784,25 +778,12 @@
           if (settings.width && settings.height) {
             capturedResolutionSpan.text(settings.width + 'x' + settings.height);
           }
+
+          if (settings.frameRate) {
+            capturedFrameRateSpan.text(normalizeFrameRate(settings.frameRate) + 'fps');
+          }
         }
       }
-
-      frameCalculatorTimer = setInterval(function () {
-
-        if (totalVideoFrames === 0) {
-
-          totalVideoFrames = videoElement.getVideoPlaybackQuality().totalVideoFrames;
-        } else {
-
-          let currentTotalFrame = videoElement.getVideoPlaybackQuality().totalVideoFrames;
-          let frameRate = currentTotalFrame - totalVideoFrames;
-
-          capturedFrameRateSpan.text(frameRate + 'fps');
-
-          totalVideoFrames = currentTotalFrame;
-        }
-
-      }, 1000);
     }
 
     function getUserConstraints() {
@@ -1054,7 +1035,7 @@
           iceStateChange: function (state) {
             iceStateSpan.text(state);
             if (state === 'connected') {
-              testPlaybackButtonArea.show();
+              // testPlaybackButtonArea.show();
               errorTextSpan.text('');
             }
           }
@@ -1118,9 +1099,10 @@
 
           const width = settings.width;
           const height = settings.height;
+          const frameRate = settings.frameRate;
 
-          if (typeof width === 'number' && typeof height === 'number') {
-            ovenCapabilitiesInput.val(`max_width=${width}, max_height=${height}`);
+          if (typeof width === 'number' && typeof height === 'number' && typeof frameRate === 'number') {
+            ovenCapabilitiesInput.val(`max_width=${width}, max_height=${height}, max_fps=${normalizeFrameRate(frameRate)}`);
           }
         }
       } else {
@@ -1141,19 +1123,26 @@
 
         let connectionConfig = {};
 
-        if (videoBitrateLimitInput.val()) {
-          connectionConfig.maxVideoBitrate = parseInt(videoBitrateLimitInput.val());
-        }
+        const maxVideoBitrate = videoBitrateLimitInput.val();
+        const simulcastLayerCount = numberOfLayersInput.val();
 
         if (videoPreferredCodecSelect.val() !== '') {
           connectionConfig.preferredVideoFormat = videoPreferredCodecSelect.val();
         }
 
-        if (numberOfLayersInput.val()) {
+        if (!simulcastLayerCount || simulcastLayerCount === 0) {
+          
+          if (maxVideoBitrate) {
+            connectionConfig.maxVideoBitrate = parseInt(maxVideoBitrate);
+          }
+
+        } else {
+          
           connectionConfig.simulcast = [];
 
-          for (let i = 0; i < parseInt(numberOfLayersInput.val()); i++) {
-            connectionConfig.simulcast.push({});
+          for (let i = 0; i < simulcastLayerCount; i++) {
+            const senderParameters = {};
+            connectionConfig.simulcast.push(senderParameters);
           }
         }
 
