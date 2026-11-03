@@ -175,7 +175,10 @@ const CaptionViewer = function($container, api, playerState){
                     box = { style: style, texts: [] };
                     boxes.push(box);
                 }
-                box.texts.push(cueTextToHtml(cue.text));
+                // Leading or trailing whitespace in the cue text would survive
+                // white-space: pre-line and sit inside the background box as padding
+                // the cue never asked for.
+                box.texts.push(cueTextToHtml(cue.text.trim()));
             });
 
             const html = boxes.map(function(box) {

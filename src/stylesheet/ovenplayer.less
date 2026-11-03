@@ -1639,22 +1639,22 @@ i.op-con {
     }
 
     .op-caption-text {
-      /* An inline box, so its background is drawn per line and stops with the
-         text. box-decoration-break repeats the background, padding and radius on
-         every wrapped line rather than splitting one box across them. Vertical
-         padding is kept under (line-height - content area) so the per-line
-         backgrounds meet without overlapping into darker bands. */
-      display: inline;
-      -webkit-box-decoration-break: clone;
-      box-decoration-break: clone;
+      /* One box behind the whole caption rather than a box per line. An
+         inline-block shrinks to its content, so a short caption still gets a
+         box that fits it, while a caption that wraps gets a single rectangle
+         covering every line instead of a ragged stack whose outline changes
+         with the text. Rolling captions rewrite themselves constantly, and a
+         steady outline is far easier to read past than one that reshapes on
+         every cue. */
+      display: inline-block;
       color: #fff;
       font-size: 1.5em;
-      line-height: 1.5em;
+      line-height: 1.4em;
       font-weight: 400;
       text-shadow: none;
-      background: rgba(8, 8, 8, 0.75);
-      padding: .1em .6em;
-      border-radius: .25em;
+      background: rgba(0, 0, 0, 0.8);
+      padding: .2em .3em;
+      border-radius: 0;
       user-select: none;
       word-break: keep-all;
       overflow-wrap: break-word;
