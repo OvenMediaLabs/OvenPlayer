@@ -374,12 +374,18 @@ const HlsProvider = function (element, playerConfig, adTagUrl) {
             // the view can be told to clear instead of guessing with a hide timer.
             // cueFrameId and lastCueTime live at provider scope, see the top of the file.
 
-            // Consecutive cues from a live packager often overlap by a millisecond or
-            // two because their timestamps are rounded. An overlap that short is a
-            // hand-off, not two cues meant to be read together, so the outgoing cue is
-            // dropped instead of being stacked above the incoming one for a frame.
-            // Cues genuinely authored as simultaneous overlap by far more than this.
-            var CUE_HANDOFF_OVERLAP = 0.05;
+            // Consecutive cues from a live packager overlap when it gives every cue a
+            // fixed duration: the next cue starts before the previous one's duration has
+            // run out. Rounded timestamps add a millisecond or two on top. On an LL-HLS
+            // speech-to-text rendition emitting a two second cue roughly every two
+            // seconds, the interval wandered between 1.73s and 2.15s, so overlaps reached
+            // 0.27s. The value carries margin over that rather than sitting on it, since
+            // the interval is what wanders and a threshold tuned to one capture is tight
+            // on the next. An overlap this short is a hand-off, not two cues meant to be
+            // read together, so the outgoing cue is dropped instead of being stacked above
+            // the incoming one. Cues genuinely authored as simultaneous share a start time
+            // or sit on different lines, so they are left alone.
+            var CUE_HANDOFF_OVERLAP = 0.35;
 
             function cueBoxKey(cue) {
                 return [cue.line, cue.snapToLines, cue.position,

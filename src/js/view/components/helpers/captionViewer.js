@@ -21,6 +21,15 @@ const CaptionViewer = function($container, api, playerState){
         let deleteTimer = 0;
         let renderedHtml = '';
 
+        // A gap of a few tens of milliseconds between consecutive cues is a timing
+        // artifact rather than a pause: a packager that gives every cue a fixed duration
+        // leaves one whenever its emit interval runs slightly long. Clearing on it blinks
+        // the caption once per cue, so an empty set waits out this hold first and the wait
+        // is cancelled if the next cue arrives before it elapses. Gaps reached 0.15s on an
+        // LL-HLS speech-to-text rendition; the hold carries margin over that because the
+        // emit interval wanders from capture to capture.
+        const CLEAR_HOLD = 200;
+
         // WebVTT cue text markup: tag name -> element, plus the tags that carry an
         // annotation ("<v Fred>", "<lang en>") and the character entities VTT defines.
         const CUE_TAGS = {c: 'span', i: 'i', b: 'b', u: 'u', ruby: 'ruby', rt: 'rt', v: 'span', lang: 'span'};
@@ -217,14 +226,17 @@ const CaptionViewer = function($container, api, playerState){
                 deleteTimer = 0;
             }
 
-            // A provider that sends a cue list tracks the active set itself and sends
-            // an empty list once nothing should be on screen. No hide timer is wanted
-            // there: it would cut a short cue off before its end time.
+            // A provider that sends a cue list tracks the active set itself and sends an
+            // empty list once nothing should be on screen, so a cue is never hidden on a
+            // timer derived from its duration the way the legacy payload below is.
             if(data.cues){
                 if(data.cues.length){
                     renderCues(data.cues);
                 }else{
-                    clearCues();
+                    deleteTimer = setTimeout(function(){
+                        deleteTimer = 0;
+                        clearCues();
+                    }, CLEAR_HOLD);
                 }
                 return;
             }
