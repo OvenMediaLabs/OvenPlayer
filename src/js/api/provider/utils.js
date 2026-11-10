@@ -60,6 +60,11 @@ export const pickCurrentSource = (sources, playerConfig) => {
 }
 
 export function getSeekableStartEnd(mediaElement) {
+    // Native HLS live has no seekable range for a moment after it starts,
+    // and TimeRanges.start(0) throws on an empty range.
+    if (mediaElement.seekable.length === 0) {
+        return null;
+    }
     let start = mediaElement.seekable.start(0);
     let end = mediaElement.seekable.end(mediaElement.seekable.length - 1);
     return {

@@ -106,7 +106,10 @@ const TimeDisplay = function ($container, api, data) {
         const syncPosition = api.getMseInstance().liveSyncPosition;
         api.seek(syncPosition);
       } else if (hlsLive && nativeHlsLive) {
-        api.seek(getSeekableStartEnd(mediaElement).end);
+        const seekable = getSeekableStartEnd(mediaElement);
+        if (seekable) {
+          api.seek(seekable.end);
+        }
       }
     }
   };

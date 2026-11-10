@@ -221,6 +221,9 @@ const ProgressBar = function ($container, api, isAd, metadata) {
             } else {
 
                 const seekable = getSeekableStartEnd(mediaElement);
+                if (!seekable) {
+                    return;
+                }
                 const seekableRange = seekable.end - seekable.start;
                 time = seekable.start + seekableRange * percentage;
             }
@@ -254,7 +257,7 @@ const ProgressBar = function ($container, api, isAd, metadata) {
 
             const seekable = getSeekableStartEnd(mediaElement);
 
-            duration = seekable.end - seekable.start;
+            duration = seekable ? seekable.end - seekable.start : 0;
             second = duration * (1 - percentage);
 
             if (api.isTimecodeMode()) {
@@ -323,6 +326,9 @@ const ProgressBar = function ($container, api, isAd, metadata) {
 
                         } else {
                             const seekable = getSeekableStartEnd(mediaElement);
+                            if (!seekable) {
+                                return;
+                            }
                             const relativePosition = data.position - seekable.start;
                             percentage = relativePosition / (seekable.end - seekable.start);
                         }
